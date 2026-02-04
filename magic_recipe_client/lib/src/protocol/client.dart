@@ -252,6 +252,21 @@ class EndpointGreeting extends _i2.EndpointRef {
       );
 }
 
+/// {@category Endpoint}
+class EndpointRecipes extends _i2.EndpointRef {
+  EndpointRecipes(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'recipes';
+
+  _i3.Future<String> generateRecipe(String ingredients) =>
+      caller.callServerEndpoint<String>(
+        'recipes',
+        'generateRecipe',
+        {'ingredients': ingredients},
+      );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _i1.Caller(client);
@@ -295,6 +310,7 @@ class Client extends _i2.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    recipes = EndpointRecipes(this);
     modules = Modules(this);
   }
 
@@ -304,6 +320,8 @@ class Client extends _i2.ServerpodClientShared {
 
   late final EndpointGreeting greeting;
 
+  late final EndpointRecipes recipes;
+
   late final Modules modules;
 
   @override
@@ -311,6 +329,7 @@ class Client extends _i2.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'recipes': recipes,
   };
 
   @override

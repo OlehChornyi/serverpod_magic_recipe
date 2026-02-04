@@ -10,3 +10,5 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+recipes:
+  - generateRecipe:
