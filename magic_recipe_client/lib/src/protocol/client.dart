@@ -266,6 +266,13 @@ class EndpointRecipes extends _i2.EndpointRef {
         'generateRecipe',
         {'ingredients': ingredients},
       );
+
+  _i3.Future<List<_i6.Recipe>> getRecipes() =>
+      caller.callServerEndpoint<List<_i6.Recipe>>(
+        'recipes',
+        'getRecipes',
+        {},
+      );
 }
 
 class Modules {

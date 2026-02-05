@@ -14,6 +14,7 @@ class GreetingsScreen extends StatefulWidget {
 class _GreetingsScreenState extends State<GreetingsScreen> {
   /// Holds the last result or null if no result exists yet.
   Recipe? _recipe;
+  List<Recipe> _recipeHistory = [];
 
   /// Holds the last error message that we've received from the server or null
   /// if no error exists yet.
@@ -37,6 +38,7 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
         _errorMessage = null;
         _recipe = result;
         _loading = false;
+        _recipeHistory.insert(0, result);
       });
     } catch (e) {
       setState(() {
@@ -48,41 +50,85 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    client.recipes.getRecipes().then((favouriteRecipes) {
+      setState(() {
+        _recipeHistory = favouriteRecipes;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          if (widget.onSignOut != null) ...[
-            const Text('You are connected'),
-            ElevatedButton(
-              onPressed: widget.onSignOut,
-              child: const Text('Sign out'),
-            ),
-          ],
-          const SizedBox(height: 32),
-          TextField(
-            controller: _textEditingController,
-            decoration: const InputDecoration(hintText: 'Enter your name'),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loading ? null : _callGenerateRecipe,
-            child: const Text('Send to Server'),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: SingleChildScrollView(
-              child: ResultDisplay(
-                resultMessage: _recipe != null
-                    ? '${_recipe?.author} on ${_recipe?.date}:\n${_recipe?.text}'
-                    : null,
-                errorMessage: _errorMessage,
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: Colors.grey[300]),
+            child: ListView.builder(
+              itemCount: _recipeHistory.length,
+              itemBuilder: (context, index) {
+                final recipe = _recipeHistory[index];
+                final firstLineEnd = recipe.text.indexOf('\n');
+                final title = firstLineEnd != -1
+                    ? recipe.text.substring(0, firstLineEnd)
+                    : recipe.text;
+                return ListTile(
+                  title: Text(title),
+                  subtitle: Text('${recipe.author} - ${recipe.date}'),
+                  onTap: () {
+                    setState(() {
+                      _recipe = recipe;
+                      _textEditingController.text = recipe.ingredients;
+                    });
+                  },
+                );
+              },
             ),
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                if (widget.onSignOut != null) ...[
+                  const Text('You are connected'),
+                  ElevatedButton(
+                    onPressed: widget.onSignOut,
+                    child: const Text('Sign out'),
+                  ),
+                ],
+                const SizedBox(height: 32),
+                TextField(
+                  controller: _textEditingController,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your ingredients',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _loading ? null : _callGenerateRecipe,
+                  child: const Text('Send to Server'),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: ResultDisplay(
+                      resultMessage: _recipe != null
+                          ? '${_recipe?.author} on ${_recipe?.date}:\n${_recipe?.text}'
+                          : null,
+                      errorMessage: _errorMessage,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

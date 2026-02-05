@@ -25,5 +25,13 @@ docker compose up -d
 dart run bin/main.dart --apply-migrations
 cd magic_recipe_flutter
 flutter run -d chrome
-
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+table: recipe
+cd magic_recipe_server
+serverpod generate
+serverpod create-migration
+dart run bin/main.dart --apply-migrations
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+serverpod create-migration --force
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

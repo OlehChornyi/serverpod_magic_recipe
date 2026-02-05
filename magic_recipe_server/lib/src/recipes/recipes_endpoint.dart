@@ -19,7 +19,7 @@ class RecipesEndpoint extends Endpoint {
 Create a recipe using these ingredients: $ingredients
 
 Please provide:
-- A creative recipe name
+- A creative recipe name (should always be in first place in your response)
 - A list of all ingredients needed (including amounts)
 - Step-by-step cooking instructions
 - Estimated cooking time
@@ -43,6 +43,16 @@ Make it delicious and creative!
       ingredients: ingredients,
     );
 
-    return recipe;
+    final recipeWithId = await Recipe.db.insertRow(session, recipe);
+
+    return recipeWithId;
+  }
+
+  Future<List<Recipe>> getRecipes(Session session) async {
+    return await Recipe.db.find(
+      session,
+      orderBy: (t) => t.date,
+      orderDescending: true,
+    );
   }
 }
