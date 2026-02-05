@@ -84,6 +84,7 @@ void _sendRegistrationCode(
   required String verificationCode,
   required Transaction? transaction,
 }) {
+  print('VERIFICATION: $verificationCode');
   // NOTE: Here you call your mail service to send the verification code to
   // the user. For testing, we will just log the verification code.
   session.log('[EmailIdp] Registration code ($email): $verificationCode');

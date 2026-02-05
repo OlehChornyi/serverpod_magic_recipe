@@ -1,5 +1,6 @@
 import 'package:magic_recipe_client/magic_recipe_client.dart';
 import 'package:flutter/material.dart';
+import 'package:magic_recipe_flutter/screens/sign_in_screen.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
@@ -61,19 +62,19 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: const GreetingsScreen(),
+      // body: const GreetingsScreen(),
       // To test authentication in this example app, uncomment the line below
       // and comment out the line above. This wraps the GreetingsScreen with a
       // SignInScreen, which automatically shows a sign-in UI when the user is
       // not authenticated and displays the GreetingsScreen once they sign in.
       //
-      // body: SignInScreen(
-      //   child: GreetingsScreen(
-      //     onSignOut: () async {
-      //       await client.auth.signOutDevice();
-      //     },
-      //   ),
-      // ),
+      body: SignInScreen(
+        child: GreetingsScreen(
+          onSignOut: () async {
+            await client.auth.signOutDevice();
+          },
+        ),
+      ),
     );
   }
 }
