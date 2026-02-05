@@ -83,6 +83,15 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
                       _textEditingController.text = recipe.ingredients;
                     });
                   },
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      await client.recipes.deleteRecipe(recipe.id!);
+                      setState(() {
+                        _recipeHistory.removeAt(index);
+                      });
+                    },
+                  ),
                 );
               },
             ),
