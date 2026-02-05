@@ -1,6 +1,14 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:magic_recipe_server/src/generated/protocol.dart';
+import 'package:meta/meta.dart';
 import 'package:serverpod/serverpod.dart';
+
+@visibleForTesting
+var generateContent = (String apiKey, String prompt) async =>
+    (await GenerativeModel(
+      model: 'models/gemini-2.5-flash',
+      apiKey: apiKey,
+    ).generateContent([Content.text(prompt)])).text;
 
 class RecipesEndpoint extends Endpoint {
   Future<Recipe> generateRecipe(Session session, String ingredients) async {
@@ -9,10 +17,6 @@ class RecipesEndpoint extends Endpoint {
     if (geminiApiKey == null) {
       throw Exception('Gemini API key not found');
     }
-    final gemini = GenerativeModel(
-      model: 'models/gemini-2.5-flash',
-      apiKey: geminiApiKey,
-    );
 
     final prompt =
         '''
@@ -28,9 +32,7 @@ Please provide:
 Make it delicious and creative!
 ''';
 
-    final response = await gemini.generateContent([Content.text(prompt)]);
-
-    final responseText = response.text;
+    final responseText = await generateContent(geminiApiKey, prompt);
 
     if (responseText == null || responseText.isEmpty) {
       throw Exception('No response from Gemini API');
