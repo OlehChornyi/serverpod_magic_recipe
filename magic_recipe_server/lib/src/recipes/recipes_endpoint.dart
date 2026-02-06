@@ -11,6 +11,9 @@ var generateContent = (String apiKey, String prompt) async =>
     ).generateContent([Content.text(prompt)])).text;
 
 class RecipesEndpoint extends Endpoint {
+  @override
+  bool get requireLogin => true;
+
   Future<Recipe> generateRecipe(Session session, String ingredients) async {
     final geminiApiKey = session.passwords['gemini'];
 
@@ -38,11 +41,14 @@ Make it delicious and creative!
       throw Exception('No response from Gemini API');
     }
 
+    final userId = session.authenticated?.userIdentifier;
+
     final recipe = Recipe(
       author: 'Gemini',
       text: responseText,
       date: DateTime.now(),
       ingredients: ingredients,
+      userId: userId,
     );
 
     final recipeWithId = await Recipe.db.insertRow(session, recipe);
@@ -51,17 +57,21 @@ Make it delicious and creative!
   }
 
   Future<List<Recipe>> getRecipes(Session session) async {
+    final userId = session.authenticated?.userIdentifier;
+
     return await Recipe.db.find(
       session,
-      where: (t) => t.deletedAt.equals(null),
+      where: (t) => t.deletedAt.equals(null) & t.userId.equals(userId),
       orderBy: (t) => t.date,
       orderDescending: true,
     );
   }
 
   Future<void> deleteRecipe(Session session, int recipeId) async {
+    final userId = session.authenticated?.userIdentifier;
+
     final recipe = await Recipe.db.findById(session, recipeId);
-    if (recipe == null) {
+    if (recipe == null || recipe.userId != userId) {
       throw Exception('Recipe not found');
     }
     recipe.deletedAt = DateTime.now();
