@@ -187,5 +187,45 @@ void main() {
         );
       },
     );
+
+    // test('returns cached recipe if it exists', () async {
+    //   final sessionBuilder = unAuthsessionBuilder.copyWith(
+    //     authentication: AuthenticationOverride.authenticationInfo('1', {}),
+    //   );
+
+    //   final session = sessionBuilder.build();
+    //   final ingredients = 'chicken, rice, broccoli';
+
+    //   String capturedPrompt = '';
+
+    //   generateContent = (_, prompt) {
+    //     capturedPrompt = prompt;
+    //     return Future.value('Mock Recipe');
+    //   };
+    //   // First call to populate the cache.
+    //   final recipe = await endpoints.recipes.generateRecipe(
+    //     sessionBuilder,
+    //     ingredients,
+    //   );
+
+    //   expect(recipe.text, 'Mock Recipe');
+    //   expect(capturedPrompt, contains(ingredients));
+
+    //   // Cache should exist using appropriate key.
+    //   final cacheKey = 'recipe-$ingredients';
+    //   final cache = await session.caches.local.get<Recipe>(cacheKey);
+
+    //   expect(cache, isNotNull);
+    //   expect(cache?.text, 'Mock Recipe');
+
+    //   // Call the endpoint again with the same ingredients
+    //   final recipe2 = await endpoints.recipes.generateRecipe(
+    //     sessionBuilder,
+    //     ingredients,
+    //   );
+
+    //   expect(recipe2.text, 'Mock Recipe');
+    //   expect(recipe2.ingredients, equals(ingredients));
+    // });
   });
 }

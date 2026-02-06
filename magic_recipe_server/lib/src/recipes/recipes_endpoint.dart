@@ -21,6 +21,21 @@ class RecipesEndpoint extends Endpoint {
       throw Exception('Gemini API key not found');
     }
 
+    final cacheKey = 'recipe-${ingredients.hashCode}';
+    final cachedRecipe = await session.caches.local.get<Recipe>(cacheKey);
+
+    if (cachedRecipe != null) {
+      final userId = session.authenticated?.userIdentifier;
+      session.log('Recipe found in cache for ingredients: $ingredients');
+      cachedRecipe.userId = userId;
+      final recipeWithId = await Recipe.db.insertRow(
+        session,
+        cachedRecipe.copyWith(userId: userId),
+      );
+
+      return recipeWithId;
+    }
+
     final prompt =
         '''
 Create a recipe using these ingredients: $ingredients
@@ -48,10 +63,18 @@ Make it delicious and creative!
       text: responseText,
       date: DateTime.now(),
       ingredients: ingredients,
-      userId: userId,
     );
 
-    final recipeWithId = await Recipe.db.insertRow(session, recipe);
+    await session.caches.local.put(
+      cacheKey,
+      recipe,
+      lifetime: const Duration(days: 1),
+    );
+
+    final recipeWithId = await Recipe.db.insertRow(
+      session,
+      recipe.copyWith(userId: userId),
+    );
 
     return recipeWithId;
   }
