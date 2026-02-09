@@ -25,22 +25,26 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
   String? _imagePath;
   bool _loading = false;
 
-  void _callGenerateRecipe() async {
+  Stream<void> _callGenerateRecipe() async* {
     try {
       setState(() {
         _errorMessage = null;
         _recipe = null;
         _loading = true;
       });
-      final result = await client.recipes.generateRecipe(
+
+      await for (final result in client.recipes.generateRecipeStream(
         _textEditingController.text,
         _imagePath,
-      );
+      )) {
+        setState(() {
+          _errorMessage = null;
+          _recipe = result;
+        });
+      }
       setState(() {
-        _errorMessage = null;
-        _recipe = result;
         _loading = false;
-        _recipeHistory.insert(0, result);
+        if (_recipe != null) _recipeHistory.insert(0, _recipe!);
       });
     } catch (e) {
       setState(() {
