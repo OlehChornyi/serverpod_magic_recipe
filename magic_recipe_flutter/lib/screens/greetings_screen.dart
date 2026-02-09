@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:magic_recipe_client/magic_recipe_client.dart';
+import 'package:magic_recipe_flutter/widgets/image_upload_button.dart';
 
 import '../main.dart';
 
@@ -21,7 +22,7 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
   String? _errorMessage;
 
   final _textEditingController = TextEditingController();
-
+  String? _imagePath;
   bool _loading = false;
 
   void _callGenerateRecipe() async {
@@ -33,6 +34,7 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
       });
       final result = await client.recipes.generateRecipe(
         _textEditingController.text,
+        _imagePath,
       );
       setState(() {
         _errorMessage = null;
@@ -79,8 +81,10 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
                   subtitle: Text('${recipe.author} - ${recipe.date}'),
                   onTap: () {
                     setState(() {
-                      _recipe = recipe;
+                      _errorMessage = null;
                       _textEditingController.text = recipe.ingredients;
+                      _imagePath = recipe.imagePath;
+                      _recipe = recipe;
                     });
                   },
                   trailing: IconButton(
@@ -118,9 +122,23 @@ class _GreetingsScreenState extends State<GreetingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loading ? null : _callGenerateRecipe,
-                  child: const Text('Send to Server'),
+                Row(
+                  spacing: 16,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _loading ? null : _callGenerateRecipe,
+                      child: const Text('Send to Server'),
+                    ),
+                    ImageUploadButton(
+                      key: ValueKey(_imagePath),
+                      onImagePathChanged: (imagePath) {
+                        setState(() {
+                          _imagePath = imagePath;
+                        });
+                      },
+                      imagePath: _imagePath,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Expanded(

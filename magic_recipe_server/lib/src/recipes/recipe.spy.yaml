@@ -6,7 +6,9 @@ fields:
     ### The creation date of a recipe
     date: DateTime
     ingredients: String
-    #If the recipe was deleted, we store the date it was deleted
+    ### If the recipe was deleted, we store the date it was deleted
     deletedAt: DateTime?, scope=serverOnly
-    #The user id of the user, who create a recipe
+    ### The user id of the user, who create a recipe
     userId: String?, scope=serverOnly
+    ### Image path of the user upload
+    imagePath: String?

@@ -4,17 +4,21 @@ import 'package:meta/meta.dart';
 import 'package:serverpod/serverpod.dart';
 
 @visibleForTesting
-var generateContent = (String apiKey, String prompt) async =>
+var generateContent = (String apiKey, List<Content> prompt) async =>
     (await GenerativeModel(
       model: 'models/gemini-2.5-flash',
       apiKey: apiKey,
-    ).generateContent([Content.text(prompt)])).text;
+    ).generateContent(prompt)).text;
 
 class RecipesEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
 
-  Future<Recipe> generateRecipe(Session session, String ingredients) async {
+  Future<Recipe> generateRecipe(
+    Session session,
+    String ingredients, [
+    String? imagePath,
+  ]) async {
     final geminiApiKey = session.passwords['gemini'];
 
     if (geminiApiKey == null) {
@@ -35,8 +39,27 @@ class RecipesEndpoint extends Endpoint {
 
       return recipeWithId;
     }
+    final List<Content> prompt = [];
 
-    final prompt =
+    if (imagePath != null) {
+      final imageData = await session.storage.retrieveFile(
+        storageId: 'public',
+        path: imagePath,
+      );
+      if (imageData == null) {
+        throw Exception('Image not found');
+      }
+
+      prompt.add(Content.data('image/jpeg', imageData.buffer.asUint8List()));
+      prompt.add(
+        Content.text('''Generate a recipe using a dedicated ingredients.
+      Always put the title of the recipe in the first line, and then the 
+      instructions. The recipe should be easy to follow and include all necessary
+      steps. Please provide a detailed recipe. Only put the title in the
+      first line, no markup.'''),
+      );
+    }
+    final textPrompt =
         '''
 Create a recipe using these ingredients: $ingredients
 
@@ -49,6 +72,10 @@ Please provide:
 
 Make it delicious and creative!
 ''';
+
+    if (prompt.isEmpty) {
+      prompt.add(Content.text(textPrompt));
+    }
 
     final responseText = await generateContent(geminiApiKey, prompt);
 
@@ -63,6 +90,7 @@ Make it delicious and creative!
       text: responseText,
       date: DateTime.now(),
       ingredients: ingredients,
+      imagePath: imagePath,
     );
 
     await session.caches.local.put(
@@ -99,5 +127,36 @@ Make it delicious and creative!
     }
     recipe.deletedAt = DateTime.now();
     await Recipe.db.updateRow(session, recipe);
+  }
+
+  Future<(String? description, String path)> getUploadDescription(
+    Session session,
+    String filename,
+  ) async {
+    const uuid = Uuid();
+    final path = 'uploads/${uuid.v4()}/$filename';
+
+    final description = await session.storage.createDirectFileUploadDescription(
+      storageId: 'public',
+      path: path,
+    );
+
+    return (description, path);
+  }
+
+  Future<bool> verifyUpload(Session session, String path) async {
+    return await session.storage.verifyDirectFileUpload(
+      storageId: 'public',
+      path: path,
+    );
+  }
+
+  Future<String> getPublicUrlForPath(Session session, String path) async {
+    final publicUrl = await session.storage.getPublicUrl(
+      storageId: 'public',
+      path: path,
+    );
+
+    return publicUrl.toString();
   }
 }

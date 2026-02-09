@@ -1,5 +1,4 @@
 import 'package:magic_recipe_server/src/generated/recipes/recipe.dart';
-import 'package:magic_recipe_server/src/recipes/recipes_endpoint.dart';
 import 'package:test/test.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
@@ -28,11 +27,6 @@ void main() {
         );
 
         String capturedPrompt = '';
-
-        generateContent = (_, prompt) {
-          capturedPrompt = prompt;
-          return Future.value('Mock Recipe');
-        };
 
         final recipe = await endpoints.recipes.generateRecipe(
           sessionBuilder,
@@ -188,44 +182,40 @@ void main() {
       },
     );
 
-    // test('returns cached recipe if it exists', () async {
-    //   final sessionBuilder = unAuthsessionBuilder.copyWith(
-    //     authentication: AuthenticationOverride.authenticationInfo('1', {}),
-    //   );
+    test('returns cached recipe if it exists', () async {
+      final sessionBuilder = unAuthsessionBuilder.copyWith(
+        authentication: AuthenticationOverride.authenticationInfo('1', {}),
+      );
 
-    //   final session = sessionBuilder.build();
-    //   final ingredients = 'chicken, rice, broccoli';
+      final session = sessionBuilder.build();
+      final ingredients = 'chicken, rice, broccoli';
 
-    //   String capturedPrompt = '';
+      String capturedPrompt = '';
 
-    //   generateContent = (_, prompt) {
-    //     capturedPrompt = prompt;
-    //     return Future.value('Mock Recipe');
-    //   };
-    //   // First call to populate the cache.
-    //   final recipe = await endpoints.recipes.generateRecipe(
-    //     sessionBuilder,
-    //     ingredients,
-    //   );
+      // First call to populate the cache.
+      final recipe = await endpoints.recipes.generateRecipe(
+        sessionBuilder,
+        ingredients,
+      );
 
-    //   expect(recipe.text, 'Mock Recipe');
-    //   expect(capturedPrompt, contains(ingredients));
+      expect(recipe.text, 'Mock Recipe');
+      expect(capturedPrompt, contains(ingredients));
 
-    //   // Cache should exist using appropriate key.
-    //   final cacheKey = 'recipe-$ingredients';
-    //   final cache = await session.caches.local.get<Recipe>(cacheKey);
+      // Cache should exist using appropriate key.
+      final cacheKey = 'recipe-${ingredients.hashCode}';
+      final cache = await session.caches.local.get<Recipe>(cacheKey);
 
-    //   expect(cache, isNotNull);
-    //   expect(cache?.text, 'Mock Recipe');
+      expect(cache, isNotNull);
+      expect(cache?.text, 'Mock Recipe');
 
-    //   // Call the endpoint again with the same ingredients
-    //   final recipe2 = await endpoints.recipes.generateRecipe(
-    //     sessionBuilder,
-    //     ingredients,
-    //   );
+      // Call the endpoint again with the same ingredients
+      final recipe2 = await endpoints.recipes.generateRecipe(
+        sessionBuilder,
+        ingredients,
+      );
 
-    //   expect(recipe2.text, 'Mock Recipe');
-    //   expect(recipe2.ingredients, equals(ingredients));
-    // });
+      expect(recipe2.text, 'Mock Recipe');
+      expect(recipe2.ingredients, equals(ingredients));
+    });
   });
 }

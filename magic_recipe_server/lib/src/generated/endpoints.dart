@@ -15,10 +15,11 @@ import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
 import '../greetings/greeting_endpoint.dart' as _i4;
 import '../recipes/recipes_endpoint.dart' as _i5;
+import 'package:magic_recipe_server/src/generated/protocol.dart' as _i6;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i6;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i7;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i8;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -279,6 +280,11 @@ class Endpoints extends _i1.EndpointDispatch {
               type: _i1.getType<String>(),
               nullable: false,
             ),
+            'imagePath': _i1.ParameterDescription(
+              name: 'imagePath',
+              type: _i1.getType<String?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -288,6 +294,7 @@ class Endpoints extends _i1.EndpointDispatch {
                   (endpoints['recipes'] as _i5.RecipesEndpoint).generateRecipe(
                     session,
                     params['ingredients'],
+                    params['imagePath'],
                   ),
         ),
         'getRecipes': _i1.MethodConnector(
@@ -319,11 +326,69 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['recipeId'],
                   ),
         ),
+        'getUploadDescription': _i1.MethodConnector(
+          name: 'getUploadDescription',
+          params: {
+            'filename': _i1.ParameterDescription(
+              name: 'filename',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['recipes'] as _i5.RecipesEndpoint)
+                  .getUploadDescription(
+                    session,
+                    params['filename'],
+                  )
+                  .then((record) => _i6.Protocol().mapRecordToJson(record)),
+        ),
+        'verifyUpload': _i1.MethodConnector(
+          name: 'verifyUpload',
+          params: {
+            'path': _i1.ParameterDescription(
+              name: 'path',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['recipes'] as _i5.RecipesEndpoint).verifyUpload(
+                    session,
+                    params['path'],
+                  ),
+        ),
+        'getPublicUrlForPath': _i1.MethodConnector(
+          name: 'getPublicUrlForPath',
+          params: {
+            'path': _i1.ParameterDescription(
+              name: 'path',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['recipes'] as _i5.RecipesEndpoint)
+                  .getPublicUrlForPath(
+                    session,
+                    params['path'],
+                  ),
+        ),
       },
     );
-    modules['serverpod_auth_idp'] = _i6.Endpoints()
+    modules['serverpod_auth_idp'] = _i7.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i7.Endpoints()
+    modules['serverpod_auth_core'] = _i8.Endpoints()
       ..initializeEndpoints(server);
   }
 }
