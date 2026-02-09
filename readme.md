@@ -34,4 +34,5 @@ dart run bin/main.dart --apply-migrations
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 serverpod create-migration --force
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
+chmod +x ./scripts/build_flutter_web
+./scripts/build_flutter_web
